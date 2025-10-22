@@ -1,0 +1,4 @@
+# Virtual environments
+venv/
+backend/venv/
+backend/.env
