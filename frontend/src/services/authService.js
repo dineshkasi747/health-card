@@ -1,5 +1,5 @@
 // authService.js
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:8000";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
 class AuthService {
   constructor() {
@@ -98,8 +98,8 @@ class AuthService {
       throw new Error("No refresh token available");
     }
 
-    // call backend refresh endpoint
-    const res = await fetch(`${API_URL}/auth/refresh`, {
+    // call backend refresh endpoint - FIXED: Changed API_URL to API_BASE_URL
+    const res = await fetch(`${API_BASE_URL}/auth/refresh`, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${refreshToken}`,
@@ -127,7 +127,7 @@ class AuthService {
   // main wrapper used by get/post/patch/delete
   async authenticatedFetch(url, options = {}) {
     // Normalize url (allow endpoint paths)
-    const fullUrl = url.startsWith("http") ? url : `${API_URL}${url}`;
+    const fullUrl = url.startsWith("http") ? url : `${API_BASE_URL}${url}`;
 
     const accessToken = this.getAccessToken();
     const headers = Object.assign({}, options.headers || {});

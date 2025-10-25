@@ -8,7 +8,7 @@ import MedicationsPage from './MedicationsPage';
 import AppointmentsPage from './AppointmentsPage';
 import VitalsPage from './VitalsPage';
 import LabResultsPage from './LabResultsPage';
-import AIChat from './AIChat';
+import AIChat from './AIChat.jsx';
 import EmergencyContacts from './EmergencyContacts';
 
 const API_URL = 'http://localhost:8000';

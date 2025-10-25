@@ -89,14 +89,22 @@ class AuthService {
       throw new Error('No access token available');
     }
 
+    // Build full URL if it's a relative path
+    const fullUrl = url.startsWith('http') ? url : `${API_URL}${url}`;
+
+    // Prepare headers
     const headers = {
       ...options.headers,
-      'Authorization': `Bearer ${accessToken}`,
-      'Content-Type': 'application/json'
+      'Authorization': `Bearer ${accessToken}`
     };
 
+    // Only set Content-Type if body exists and it's not FormData
+    if (options.body && !(options.body instanceof FormData)) {
+      headers['Content-Type'] = headers['Content-Type'] || 'application/json';
+    }
+
     try {
-      let response = await fetch(url, { ...options, headers });
+      let response = await fetch(fullUrl, { ...options, headers });
 
       // If unauthorized, try refreshing token
       if (response.status === 401) {
@@ -108,7 +116,7 @@ class AuthService {
           
           // Retry with new token
           console.log('🔁 Retrying request with new token...');
-          response = await fetch(url, { ...options, headers });
+          response = await fetch(fullUrl, { ...options, headers });
           
           if (response.ok) {
             console.log('✅ Request successful after token refresh');
@@ -125,6 +133,43 @@ class AuthService {
       console.error('Authenticated fetch error:', error);
       throw error;
     }
+  }
+
+  // Helper methods for common HTTP verbs
+  async get(endpoint) {
+    return this.authenticatedFetch(endpoint, { method: 'GET' });
+  }
+
+  async post(endpoint, data) {
+    const isFormData = data instanceof FormData;
+    return this.authenticatedFetch(endpoint, {
+      method: 'POST',
+      body: isFormData ? data : JSON.stringify(data)
+    });
+  }
+
+  async patch(endpoint, data) {
+    const isFormData = data instanceof FormData;
+    return this.authenticatedFetch(endpoint, {
+      method: 'PATCH',
+      body: isFormData ? data : JSON.stringify(data)
+    });
+  }
+
+  async delete(endpoint) {
+    return this.authenticatedFetch(endpoint, { method: 'DELETE' });
+  }
+
+  async uploadFile(endpoint, file, additionalData = {}) {
+    const formData = new FormData();
+    formData.append('file', file);
+    Object.keys(additionalData).forEach(key => {
+      formData.append(key, additionalData[key]);
+    });
+    return this.authenticatedFetch(endpoint, {
+      method: 'POST',
+      body: formData
+    });
   }
 }
 
